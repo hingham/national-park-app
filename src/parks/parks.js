@@ -1,90 +1,117 @@
-import React from 'react';
-import superagent from 'superagent';
+import React from "react";
+import superagent from "superagent";
 import {
-    View, 
-    Text,
-    StyleSheet,
-    TextInput,
-    ScrollView,
-    TouchableWithoutFeedback}
- from 'react-native'
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  ScrollView,
+  TouchableWithoutFeedback
+} from "react-native";
 
- import {colors} from '../theme'
+import { colors } from "../theme";
 
- export default class Parks extends React.Component{
-     state = {
-     }
-    getParks = (state)=>{
+import gql from "graphql-tag";
+import { Query, graphql, withApollo, ApolloConsumer } from "react-apollo";
+import States from "./states";
 
-        console.log('get parks');
-
+const PARK_QUERY = gql`
+  query ($parkCode: String!) {
+    park(parkCode: $parkCode) {
+      name
+      description
+      latLong
+      weather(first: 3) {
+        summary
+        data {
+            time
+            summary
+            cloudCover
+            windSpeed
+            temperatureLow
+            temperatureHigh
+        }
+      }
     }
+  }
+`;
 
+export default class Parks extends React.Component {
+  state = {};
 
-    viewParkDetails = (park)=>{
-        let parkCode = park.parkCode;
-        let URL = `https://developer.nps.gov/api/v1/articles?parkCode=${parkCode}&limit=5&api_key=${process.env.API_NP_KEY}`
-        superagent.get(URL)
-        .then(result=>{
-            // console.log('result body', result.body.data[0].listingImage);
-            return result.body.data[0].listingImage
-        })
-        .then(image=>{
-            this.props.navigation.navigate('ParkDetails', {park, image})
-        })
-        .catch(error=>{
-            (console.error('superagent call failed from park-details'))
-        });
+  onParkDeetsFetched = (data, error, errors) => {
+    console.log("got the query");
+    this.setState({ stateParks: data.stateParks });
+    this.props.navigation.navigate("ParkDetails", { data });
+  };
 
-        // console.log('park selected', park);
+  static navigationOptions = {
+    title: "Parks",
+    headerTitleStyle: {
+      color: colors.titles,
+      fontSize: 20,
+      fontWeight: "400",
     }
+  };
 
 
+  render() {
+    let stateParks = this.props.navigation.state.params.data.stateParks;
+    let usState = this.props.navigation.state.params.usState;
+    return (
+      <View>
+        <ScrollView>
+          <Text style={styles.header}>{usState.slice(4, usState.length)}</Text>
+          {stateParks.map((park, idx) => (
+            <View key={idx + park.parkCode} style={styles.parkContainer}>
+              <ApolloConsumer>
+                {client => (
+                  <TouchableWithoutFeedback
+                    onPress={async () => {
+                      const { data, error, errors } = await client.query({
+                        query: PARK_QUERY,
+                        variables: {parkCode: park.parkCode}
+                      });
+                      this.onParkDeetsFetched(data, error, errors);
+                    }}
+                  >
+                    <Text style={styles.parkTitle} key={`name${idx}`}>
+                      {park.name}
+                    </Text>
+                  </TouchableWithoutFeedback>
+                )}
+              </ApolloConsumer>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  }
+}
 
-     render() {
-        let stateParks = this.props.navigation.state.params.filteredParks;
-        let selectedState = this.props.navigation.state.params.usState;
-        // console.log(stateParks);
-         return (
-             <View>
-                 <ScrollView>
-                 <Text style={styles.header}>National Parks: {selectedState}</Text>
-                 {stateParks.map((park, idx)=>(
-                     <View style={styles.parkContainer}>
-                        <TouchableWithoutFeedback onPress= {() => this.viewParkDetails(park)}>
-                         <Text style={styles.parkTitle} key={`name${idx}`}>{park.fullName}</Text>
-                         </TouchableWithoutFeedback>
-                         <Text style={styles.park} key={`des${idx}`}>{park.description}</Text>  
-                     </View>
-                ))}
-                </ScrollView>
-             </View>
-         )
-     }
- }
-
-
- const styles = StyleSheet.create({
-     header:{
-         color: colors.secondary,
-         margin: 10,
-         fontSize: 30
-    },
-    parkContainer: {
-        justifyContent: 'center',
-        margin: 10,
-       padding: 10,
-       borderBottomWidth: 2,
-       borderBottomColor: colors.primary
-    } ,
-    parkTitle:{
-        fontSize: 25,
-        color: colors.secondary,
-        fontWeight: 'bold'
-
-    },
-    park: {
-        fontSize: 20,
-        color: 'black'
-    }
-})
+const styles = StyleSheet.create({
+  header: {
+    backgroundColor: colors.secondary,
+    color: 'white',
+    margin: 10,
+    fontSize: 35,
+    fontWeight: "bold",
+    padding: 5
+  },
+  parkContainer: {
+    justifyContent: "center",
+    margin: 10,
+    padding: 10,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.primary
+  },
+  parkTitle: {
+    fontSize: 25,
+    color: colors.secondary,
+    fontWeight: "bold"
+  },
+  park: {
+    fontSize: 20,
+    color: "black"
+  }
+});

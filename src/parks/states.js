@@ -1,83 +1,94 @@
-import React from 'react';
-import allStates from './state-array.js'
+import React from "react";
+import allStates from "./state-array.js";
 
-import superagent from 'superagent';
+import superagent from "superagent";
 import {
-    View, 
-    Text,
-    StyleSheet,
-    ScrollView,
-    TouchableWithoutFeedback
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableWithoutFeedback
+} from "react-native";
+
+import { colors } from "../theme";
+
+import gql from "graphql-tag";
+import { Query, graphql, withApollo, ApolloConsumer } from "react-apollo";
+
+const STATE_PARK_QUERY = gql`
+  query($stateCode: String!) {
+    stateParks(stateCode: $stateCode) {
+      name
+      parkCode
+    }
+  }
+`;
+
+class States extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      USstates: allStates
+    };
+  }
+
+  static navigationOptions = {
+    title: "States",
+    headerTitleStyle: {
+      color: colors.titles,
+      fontSize: 20,
+      fontWeight: "400",
+    }
+  };
+
+  onStateParksFetched = (data, error, errors, usState) => {
+    this.setState({ stateParks: data.stateParks });
+    this.props.navigation.navigate("Parks", { data, usState });
+  };
+
+  render() {
+    return (
+      <ScrollView>
+        <View>
+            {this.state.USstates.map((usState, idx) => (
+              <View key={idx + "statemap"} style={styles.cityContainer}>
+                <ApolloConsumer>
+                  {client => (
+                    <TouchableWithoutFeedback
+                      onPress={async (e) => {
+                        const { data, error, errors } = await client.query({
+                          query: STATE_PARK_QUERY,
+                          variables: { stateCode: usState.slice(0,3)}
+                        });
+                        this.onStateParksFetched(data, error, errors, usState);
+                      }}
+                    >
+                    <View >
+                      <Text style={styles.state}>{usState.split('-')[1]}</Text>
+                      </View>
+                    </TouchableWithoutFeedback>
+                  )}
+                </ApolloConsumer>
+              </View>
+            ))}
+        </View>
+      </ScrollView>
+    );
+  }
 }
 
- from 'react-native'
- import {colors} from '../theme'
+const styles = StyleSheet.create({
+  cityContainer: {
+    justifyContent: "center",
+    margin: 10,
+    padding: 10,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.primary
+  },
+  state: {
+    fontSize: 20,
+    color: "black"
+  }
+});
 
-class States extends React.Component{
-    constructor(props){
-        super(props);
-        this.state = {
-            USstates: allStates
-        }
-    }
-
-     static navigationOptions = {
-         title: 'States',
-         headerTitleStyle: {
-             color: colors.titles,
-             fontSize: 20,
-             fontWeight: '400'
-         }
-     }
-
-     viewStateParks = (usState) =>{
-        let URL = `https://developer.nps.gov/api/v1/parks?limit=496&api_key=${process.env.API_NP_KEY}`;
-        superagent.get(URL)
-        .then(parks=>{
-            console.log('sliced state', usState.slice(0, 2));
-            let filteredParks = parks.body.data.filter((parks, idx)=>{
-                return (parks.states === usState.slice(0, 2)) && (parks.designation === "National Park");  
-            })
-            return filteredParks;
-        })
-        .then((filteredParks)=>{
-            console.log('filterd Park', filteredParks);
-            this.props.navigation.navigate('Parks', {usState, filteredParks})
-        });
-     }
-
-     render() {
-         return (
-             <ScrollView>
-
-                <View>
-                {this.state.USstates.map((usState, idx)=>(
-                    <View style={styles.cityContainer}>
-                    <TouchableWithoutFeedback onPress= {() => this.viewStateParks(usState)}>
-                        <View style = {styles.cityContainer}>
-                            <Text key={idx} style={styles.state}>{usState}</Text>
-                        </View>
-                    </TouchableWithoutFeedback>
-                    </View>
-                ))}
-                </View>
-
-             </ScrollView>
-
-         )
-     }
- }
-
- const styles = StyleSheet.create({
-     cityContainer: {
-        padding: 10,
-        borderBottomWidth: 2,
-        borderBottomColor: colors.primary
-     } ,
-     state: {
-         fontSize: 20,
-         color: 'black'
-     }
- })
-
- export default States;
+export default States;

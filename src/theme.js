@@ -1,6 +1,6 @@
 const colors = {
-    primary: '#517C63',
-    secondary: '#B1736C',
+    primary: '#688F4E',
+    secondary: '#CA7159',
     buttonColor: '#E7DFCF',
     titles: '#EDE5D8'
 }

@@ -7,6 +7,14 @@
 * parks.js - renders the national parks for a selected state
 * park-details - render the park details for a selected park, an image of the park, and a map view 
 
+### Starting the App
+npm i
+`npm start` starts expo in the browser and provides scannable QR code 
+select "run on simulator" in expo and see your app in a iphone simulator
+
+
+### Getting Graphql QL set up
+* use `http://localhost:4000/`
 ### Navigation: 
 - NaviationStack: State -> National Parks -> National Park Details
 - BottomNavigation: States, Add Park
