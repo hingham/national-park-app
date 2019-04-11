@@ -3,7 +3,7 @@
   "expoServerPort": null,
   "packagerPort": null,
   "packagerPid": null,
-  "expoServerNgrokUrl": null,
-  "packagerNgrokUrl": null,
-  "ngrokPid": null
+  "expoServerNgrokUrl": "https://67-cfp.anonymous.geo-jane.exp.direct",
+  "packagerNgrokUrl": "https://packager.67-cfp.anonymous.geo-jane.exp.direct",
+  "ngrokPid": 40182
 }

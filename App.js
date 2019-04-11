@@ -14,7 +14,7 @@ import { onError } from "apollo-link-error"
 import { InMemoryCache} from "apollo-cache-inmemory"
 
 
-const BASE_URL = "http://localhost:4000/";
+const BASE_URL = "https://graphql-wrap-rest.herokuapp.com/";
 
 const httpLink = new HttpLink({
   uri: BASE_URL,

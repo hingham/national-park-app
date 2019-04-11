@@ -84,7 +84,7 @@ class ParkDetails extends React.Component {
                   <Text style={styles.list}>{daily.summary}</Text>
                   <Text> Temperature High: {daily.temperatureHigh} </Text>
                   <Text> Temperature Low: {daily.temperatureLow} </Text>
-                  <Text> Cloud Cover: {daily.cloudCover} </Text>
+                  <Text> Wind Speed: {daily.cloudCover} mph </Text>
                 </View>
               );
             })}

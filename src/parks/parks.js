@@ -24,12 +24,10 @@ const PARK_QUERY = gql`
       weather(first: 3) {
         summary
         data {
-            time
-            summary
-            cloudCover
-            windSpeed
-            temperatureLow
-            temperatureHigh
+          windSpeed
+          time
+          temperatureLow
+          temperatureHigh
         }
       }
     }
